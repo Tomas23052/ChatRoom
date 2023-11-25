@@ -27,15 +27,15 @@ export const Auth = (props) => {
   };
   return (
     <div className="auth">
-      <p>Sign In With Google</p>
+      <p>Manda aí Login oh Boi, pelo google de preferência</p>
       <input
         type="text"
-        placeholder="Enter your name"
+        placeholder="Quem és tu?"
         value={displayName}
         onChange={(e) => setDisplayName(e.target.value)}
       />
       <br/>
-      <button onClick={signInWithGoogle}>Sign In With Google</button>
+      <button onClick={signInWithGoogle}>Dwarf Gay Porn</button>
     </div>
   );
 };
