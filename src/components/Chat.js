@@ -18,7 +18,7 @@ export const Chat = (props) => {
   const messagesRef = collection(db, "messages");
 
   useEffect(() => {
-    const queryMessages = query(messagesRef, where("room", "==", room));
+    const queryMessages = query(messagesRef, where("room", "==", room), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {

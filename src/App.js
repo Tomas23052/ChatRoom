@@ -10,7 +10,6 @@ const cookies = new Cookies();
 function App() {
   const [isAuth, setIsAuth] = useState(cookies.get("auth-token"));
   const [room, setRoom] = useState(null);
-  const roomInputRef = useRef(null);
 
   const signUserOut = async () => {
     await signOut(auth);
