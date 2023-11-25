@@ -43,7 +43,7 @@ function App() {
           <h3 className="h3" onClick={() => setRoom("DEV-MOVEIS")}>
             - DEV-MOVEIS
           </h3>
-          <h3 className="h3" onClick={() => setRoom("ENG-SOFTWARE")}>
+          <h3 className="h3" onClick={() => setRoom("USELESS CADEIRA DO CASIMIRO")}>
             - ENG-SOFTWARE
           </h3>
           <h3 className="h3" onClick={() => setRoom("IRL")}>
