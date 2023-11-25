@@ -22,9 +22,10 @@ export const Chat = (props) => {
   const [photoURL, setColor] = useState(); // Default color for the user's names
 
   useEffect(() => {
+    document.title = "CHATROOM " + room;
     const messagesContainer = document.getElementById("messages-container");
     console.log(messagesContainer.id);
-  
+
     const queryMessages = query(messagesRef, where("room", "==", room), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
@@ -32,22 +33,22 @@ export const Chat = (props) => {
         messages.push({ ...doc.data(), id: doc.id });
       });
       setMessages(messages);
-  
+
       // Scroll to the bottom when new messages are added
       if (messagesContainer.lastChild) {
         messagesContainer.lastChild.scrollIntoView({ behavior: 'smooth' });
       }
     });
-  
-   
+
+
     return () => unsubscribe();
     // Scroll to the bottom when the component initially renders
-    
-  }, [room] );
+
+  }, [room]);
 
   useLayoutEffect(() => {
-    
-  
+
+
     const user = auth.currentUser;
     if (user) {
       setDisplayName(user.displayName);
@@ -59,19 +60,19 @@ export const Chat = (props) => {
       setColor(user.photoURL);
       document.getElementById("colorPicker").value = user.photoURL;
     }
-  
+
     document.getElementsByClassName("new-message-input")[0].focus();
   }, [room]);
-  
-  
+
+
 
 
   const handleSubmit = async (e) => {
-   
-   
+
+
     e.preventDefault();
-    if (newMessage === "") return; 
-    updateProfile(auth.currentUser, {photoURL: photoURL });
+    if (newMessage === "") return;
+    updateProfile(auth.currentUser, { photoURL: photoURL });
     console.log(auth.currentUser.photoURL);
     await addDoc(messagesRef, {
       text: newMessage,
@@ -113,9 +114,14 @@ export const Chat = (props) => {
           }}
         ></div>
       </div>
-  
+
       <form onSubmit={handleSubmit} className="new-message-form">
-        <input id="colorPicker" type="color" onChange={(e) => setColor(e.target.value)} />
+        <input
+          id="colorPicker"
+          className="color-picker"
+          type="color"
+          onChange={(e) => setColor(e.target.value)}
+        />
         <input
           className="new-message-input"
           onChange={(e) => setNewMessage(e.target.value)}
@@ -123,7 +129,7 @@ export const Chat = (props) => {
           placeholder="Type your message here..."
         />
         <button className="send-button" type="submit">
-          &gt;
+          Send
         </button>
       </form>
       <button className="button" onClick={handleRefresh}>
@@ -131,5 +137,5 @@ export const Chat = (props) => {
       </button>
     </div>
   );
-  
+
 };

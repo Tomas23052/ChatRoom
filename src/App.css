@@ -1,61 +1,43 @@
-.App {
-  text-align: center;
-}
+/* Updated styles for App.css */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  text-align: center;
+  margin-top: 50px;
 }
 
-.App-link {
-  color: #61dafb;
+.h3 {
+  cursor: pointer;
+  color: #3b5998;
+  margin: 20px;
+  font-size: 24px;
+  font-weight: bold; /* Make the font bold */
+  transition: color 0.3s ease; /* Smooth color transition */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.h3:hover {
+  color: #334c7d; /* Darker color on hover */
 }
 
-.button{
-  border: none;
-  outline: none;
-  background: #3b5998;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  margin-right: 5px;
-  border-radius: 5px;
-  padding: 10px;
+.sign-out {
+  text-align: center;
+  margin-top: 30px;
 }
 
-.button:hover{
+.button {
   background-color: #3b5998;
-  opacity: 0.8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 15px 30px;
+  font-size: 20px;
   cursor: pointer;
+  transition: background-color 0.3s ease; /* Smooth background color transition */
 }
 
-.h3:hover{
-  cursor: pointer;
-  text-decoration: underline;
+.button:hover {
+  background-color: #334c7d; /* Darker background color on hover */
 }

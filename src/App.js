@@ -13,6 +13,7 @@ function App() {
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setColor] = useState("");
   useEffect(() => {
+    document.title = "CHATROOM SALAS FIXES"
     // Listen for changes in the authentication state
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {

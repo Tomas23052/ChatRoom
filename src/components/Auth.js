@@ -1,12 +1,17 @@
 import { auth, provider } from "../firebase-config.js";
 import { signInWithPopup } from "firebase/auth";
 import Cookies from "universal-cookie";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { updateProfile } from 'firebase/auth';
 import "../styles/Auth.css";
 const cookies = new Cookies();
 
 
+function Title() {
+  useEffect(() => {
+    document.title = 'CHATROOM LOGIN FILHO';
+  }, []);
+}
 export const Auth = (props) => {
   const { setIsAuth } = props;
   const [displayName, setDisplayName] = useState("");
@@ -27,6 +32,7 @@ export const Auth = (props) => {
   };
   return (
     <div className="auth">
+      {Title()}
       <p>Manda aí Login oh Boi, pelo google de preferência</p>
       <input
         type="text"
