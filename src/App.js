@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 import { Auth } from "./components/Auth";
 import Cookies from "universal-cookie";
@@ -10,6 +10,26 @@ const cookies = new Cookies();
 function App() {
   const [isAuth, setIsAuth] = useState(cookies.get("auth-token"));
   const [room, setRoom] = useState(null);
+  const [displayName, setDisplayName] = useState("");
+  const [photoURL, setColor] = useState("");
+  useEffect(() => {
+    // Listen for changes in the authentication state
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        // If the user is signed in, update the display name state
+        setDisplayName(user.displayName);
+        //setColor(user.photoURL);
+        console.log(user);
+        
+        
+      }
+    });
+
+    return () => {
+      // Unsubscribe when the component unmounts
+      unsubscribe();
+    };
+  }, []);
 
   const signUserOut = async () => {
     await signOut(auth);
