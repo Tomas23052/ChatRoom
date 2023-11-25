@@ -15,6 +15,7 @@ export const Chat = (props) => {
   const { room } = props;
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [color, setColor] = useState("#00ff00"); // Default color for the user's name
   const messagesRef = collection(db, "messages");
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export const Chat = (props) => {
       setMessages(messages);
     });
     return () => unsubscribe();
-  }, []);
+  }, [room]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,6 +46,10 @@ export const Chat = (props) => {
     window.location.reload();
   };
 
+  const handleColorChange = (e) => {
+    setColor(e.target.value);
+  };
+
   return (
     <div className="chat-app">
       <div className="header">
@@ -53,7 +58,7 @@ export const Chat = (props) => {
       <div className="messages">
         {messages.map((message) => (
           <div className="message" key={message.id}>
-            <span className="user" style={{ color: "blue" }}>
+            <span className="user" style={{ color: message.user === auth.currentUser.displayName ? color : "inherit" }}>
               {message.user}
             </span>
             {message.text}
@@ -71,10 +76,10 @@ export const Chat = (props) => {
           &gt;
         </button>
       </form>
-
       <button className="button" onClick={handleRefresh}>
         Go Back
       </button>
+      <input id="colorPicker" type="color" value={color} onChange={handleColorChange} />
     </div>
   );
 };
