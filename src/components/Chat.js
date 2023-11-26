@@ -122,8 +122,8 @@ export const Chat = (props) => {
       photoURL: photoURL,
       room,
     });
-
     alert("Uploaded");
+    return setImageUpload(null);
   };
 
   return (
