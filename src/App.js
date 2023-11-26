@@ -13,7 +13,7 @@ function App() {
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setColor] = useState("");
   useEffect(() => {
-    document.title = "CHATROOM SALAS FIXES"
+    document.title = "CHATROOM SALAS FIXES";
     // Listen for changes in the authentication state
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -21,8 +21,6 @@ function App() {
         setDisplayName(user.displayName);
         //setColor(user.photoURL);
         console.log(user);
-        
-        
       }
     });
 
@@ -79,11 +77,10 @@ function App() {
         <button
           className="button"
           onClick={signUserOut}
-          style={{  }}
+          style={{ marginBottom: "10px" }}
         >
           Vou meter-me no caralho
         </button>
-
       </div>
     </>
   );

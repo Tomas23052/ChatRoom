@@ -70,12 +70,14 @@
 .send-button {
   border: none;
   outline: none;
-  background: #3b5998;
+  background: #333;
   color: #fff;
   font-size: 16px;
   font-weight: bold;
-  border-radius: 0 5px 5px 0;
+  border-radius: 5px;
   padding: 10px;
+  margin-right: 10px;
+
 }
 
 .send-button:hover {
@@ -84,7 +86,7 @@
 
 .button {
   margin-top: 10px;
-  background-color: #3b5998;
+  background-color: #333;
   padding: 8px 16px;
   border: none;
   border-radius: 4px;
@@ -94,3 +96,20 @@
 .button:hover {
   background-color: #b3b3b3;
 }
+
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.input-file {
+  order: 2; /* Place the input second in the column */
+}
+
+.button {
+  order: 1; /* Place the label first in the column */
+}
+
+
+

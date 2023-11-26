@@ -7,48 +7,74 @@ import {
   query,
   where,
   orderBy,
-
 } from "firebase/firestore";
 import { auth, db } from "../firebase-config.js";
-import { updateProfile } from 'firebase/auth';
+import { updateProfile } from "firebase/auth";
+import { storage } from "../firebase-config.js";
+import { ref, uploadBytes } from "firebase/storage";
+import { v4 } from "uuid";
 import "../styles/Chat.css";
+import { getDownloadURL } from "firebase/storage";
+
+// ... (other imports)
 
 export const Chat = (props) => {
   const { room } = props;
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [combinedItems, setCombinedItems] = useState([]); // Combined array of messages and images
   const messagesRef = collection(db, "messages");
+  const imagesRef = collection(db, "images");
   const [displayName, setDisplayName] = useState("");
-  const [photoURL, setColor] = useState(); // Default color for the user's names
+  const [photoURL, setColor] = useState();
+  const [imageUpload, setImageUpload] = useState(null);
 
   useEffect(() => {
-    document.title = "CHATROOM " + room;
     const messagesContainer = document.getElementById("messages-container");
-    console.log(messagesContainer.id);
-
-    const queryMessages = query(messagesRef, where("room", "==", room), orderBy("createdAt", "asc"));
-    const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
+  
+    const queryMessages = query(
+      messagesRef,
+      where("room", "==", room),
+      orderBy("createdAt", "asc")
+    );
+    const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {
         messages.push({ ...doc.data(), id: doc.id });
       });
-      setMessages(messages);
-
-      // Scroll to the bottom when new messages are added
-      if (messagesContainer.lastChild) {
-        messagesContainer.lastChild.scrollIntoView({ behavior: 'smooth' });
-      }
+      setCombinedItems([...messages]); // Clear the previous state and set to new messages
+      scrollToBottom();
     });
-
-
-    return () => unsubscribe();
-    // Scroll to the bottom when the component initially renders
-
+  
+    const queryImages = query(
+      imagesRef,
+      where("room", "==", room),
+      orderBy("createdAt", "asc")
+    );
+    const unsubscribeImages = onSnapshot(queryImages, (snapshot) => {
+      let images = [];
+      snapshot.forEach((doc) => {
+        images.push({ ...doc.data(), id: doc.id });
+      });
+      setCombinedItems((prevItems) => [...prevItems, ...images]); // Append images to existing state
+      scrollToBottom();
+    });
+  
+    return () => {
+      unsubscribeMessages();
+      unsubscribeImages();
+    };
   }, [room]);
+  
+  
+
+  const scrollToBottom = () => {
+    const messagesContainer = document.getElementById("messages-container");
+    if (messagesContainer.lastChild) {
+      messagesContainer.lastChild.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useLayoutEffect(() => {
-
-
     const user = auth.currentUser;
     if (user) {
       setDisplayName(user.displayName);
@@ -64,16 +90,10 @@ export const Chat = (props) => {
     document.getElementsByClassName("new-message-input")[0].focus();
   }, [room]);
 
-
-
-
   const handleSubmit = async (e) => {
-
-
     e.preventDefault();
     if (newMessage === "") return;
     updateProfile(auth.currentUser, { photoURL: photoURL });
-    console.log(auth.currentUser.photoURL);
     await addDoc(messagesRef, {
       text: newMessage,
       createdAt: serverTimestamp(),
@@ -88,26 +108,57 @@ export const Chat = (props) => {
     window.location.reload();
   };
 
+  const uploadImage = async () => {
+    if (imageUpload == null) return;
+
+    const imageRef = ref(storage, `images/${imageUpload.name + v4()}`);
+    const snapshot = await uploadBytes(imageRef, imageUpload);
+    const imageUrl = await getDownloadURL(snapshot.ref);
+
+    await addDoc(imagesRef, {
+      imageUrl,
+      createdAt: serverTimestamp(),
+      user: auth.currentUser.displayName,
+      photoURL: photoURL,
+      room,
+    });
+
+    alert("Uploaded");
+  };
+
   return (
     <div className="chat-app">
       <div className="header">
         <h1> {room}</h1>
       </div>
-      <div id="messages-container" className="messages" style={{ overflow: "auto", height: "600px" }}>
-        {messages.map((message) => (
-          <div className="message" key={message.id}>
-            <span
-              className="user"
-              style={{ color: message.photoURL }}
-            >
-              {message.user}
-            </span>
-            {message.text}
-          </div>
-        ))}
+      <div
+        id="messages-container"
+        className="messages"
+        style={{ overflow: "auto", height: "600px" }}
+      >
+        {combinedItems
+          .sort((a, b) => a.createdAt - b.createdAt)
+          .map((item) => (
+            <div className="message" key={item.id}>
+              <span className="user" style={{ color: item.photoURL }}>
+                {item.user}
+              </span>
+              {item.text && <div>{item.text}</div>}
+              {item.imageUrl && (
+                <img
+                  src={item.imageUrl}
+                  alt={`Uploaded by ${item.user}`}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "300px",
+                    marginTop: "10px",
+                  }}
+                />
+              )}
+            </div>
+          ))}
         <div
           ref={(el) => {
-            // Using a ref to keep track of the last message element
             if (el) {
               el.scrollIntoView({ behavior: "instant" });
             }
@@ -131,11 +182,23 @@ export const Chat = (props) => {
         <button className="send-button" type="submit">
           Mandai
         </button>
+        <div className="file-input-container">
+          <input
+            className="input-file"
+            type="file"
+            accept="image/jpeg, image/png"
+            id="fileInput"
+            onChange={(event) => setImageUpload(event.target.files[0])}
+          />
+          <label className="button" onClick={uploadImage}>
+            Upload
+          </label>
+        </div>
       </form>
       <button className="button" onClick={handleRefresh}>
         Farto desta merda
       </button>
     </div>
   );
-
 };
+
