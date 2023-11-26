@@ -91,7 +91,7 @@ export const Chat = (props) => {
   return (
     <div className="chat-app">
       <div className="header">
-        <h1>Bem-vindo ao chat {room}</h1>
+        <h1> {room}</h1>
       </div>
       <div id="messages-container" className="messages" style={{ overflow: "auto", height: "600px" }}>
         {messages.map((message) => (
@@ -129,11 +129,11 @@ export const Chat = (props) => {
           placeholder="Type your message here..."
         />
         <button className="send-button" type="submit">
-          Send
+          Mandai
         </button>
       </form>
       <button className="button" onClick={handleRefresh}>
-        Go Back
+        Farto desta merda
       </button>
     </div>
   );

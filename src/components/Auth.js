@@ -1,47 +1,75 @@
 import { auth, provider } from "../firebase-config.js";
 import { signInWithPopup } from "firebase/auth";
+import { updateProfile } from 'firebase/auth';
 import Cookies from "universal-cookie";
 import React, { useState, useEffect } from 'react';
-import { updateProfile } from 'firebase/auth';
 import "../styles/Auth.css";
 const cookies = new Cookies();
-
 
 function Title() {
   useEffect(() => {
     document.title = 'CHATROOM LOGIN FILHO';
   }, []);
 }
+
 export const Auth = (props) => {
   const { setIsAuth } = props;
   const [displayName, setDisplayName] = useState("");
-  const [photoURL, setColor] = useState(""); // Default color for the user's names
+  const [questionAnswer, setQuestionAnswer] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+
+  const validateAnswer = () => {
+    // Check if the question answer contains the required word
+    if (questionAnswer.toLowerCase().includes("caralho")) {
+      setShowLogin(true);
+    } else {
+      alert("Burro de merda, não há de ser isso");
+    }
+  };
+
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       if (displayName.trim() !== "") {
-        
-        await updateProfile(result.user, { displayName: displayName});
+        await updateProfile(result.user, { displayName: displayName });
       }
       cookies.set("auth-token", result.user.refreshToken);
-
       setIsAuth(true);
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
     <div className="auth">
       {Title()}
-      <p>Manda aí Login oh Boi, pelo google de preferência</p>
-      <input
-        type="text"
-        placeholder="Quem és tu?"
-        value={displayName}
-        onChange={(e) => setDisplayName(e.target.value)}
-      />
-      <br/>
-      <button onClick={signInWithGoogle}>Dwarf Gay Porn</button>
+      {!showLogin && (
+        <div>
+          <p>Quem?</p>
+          <input
+            type="text"
+            placeholder="Enter your response"
+            value={questionAnswer}
+            onChange={(e) => setQuestionAnswer(e.target.value)}
+          />
+         
+          <button style={{marginLeft: 10}} onClick={validateAnswer}>Proceed</button>
+        </div>
+      )}
+      {showLogin && (
+        <div>
+          <h3>Manda aí Login oh Boi, pelo google de preferência</h3>
+          <p >Se já meteste nome antes, deixa-te estar e dá login</p>
+          <input
+            type="text"
+            placeholder="Mas quem és tu?"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+        
+          <button style={{marginLeft: 10}} onClick={signInWithGoogle}>Dwarf Gay Porn</button>
+        </div>
+      )}
     </div>
   );
 };

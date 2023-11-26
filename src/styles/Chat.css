@@ -41,6 +41,13 @@
   align-items: center; /* Center items vertically */
 }
 
+.new-message-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+}
+
 .color-picker {
   width: 40px; /* Adjust the width to your preference */
   height: 40px; /* Set it to the same value as width to make it a square */
