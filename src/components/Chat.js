@@ -182,7 +182,7 @@ export const Chat = (props) => {
         <button className="send-button" type="submit">
           Mandai
         </button>
-        <div className="file-input-container">
+        {/*	<div className="file-input-container">
           <input
             className="input-file"
             type="file"
@@ -193,7 +193,8 @@ export const Chat = (props) => {
           <label className="button" onClick={uploadImage}>
             Upload
           </label>
-        </div>
+        </div>*/}
+        
       </form>
       <button className="button" onClick={handleRefresh}>
         Farto desta merda
