@@ -13,24 +13,22 @@ import { updateProfile } from "firebase/auth";
 import { storage } from "../firebase-config.js";
 import { ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
-import "../styles/Chat.css";
 import { getDownloadURL } from "firebase/storage";
-
-// ... (other imports)
+import "../styles/Chat.css";
 
 export const Chat = (props) => {
   const { room } = props;
   const [newMessage, setNewMessage] = useState("");
-  const [combinedItems, setCombinedItems] = useState([]); // Combined array of messages and images
+  const [combinedItems, setCombinedItems] = useState([]);
   const messagesRef = collection(db, "messages");
   const imagesRef = collection(db, "images");
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setColor] = useState();
   const [imageUpload, setImageUpload] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [lastReadTime, setLastReadTime] = useState(0);
 
   useEffect(() => {
-    const messagesContainer = document.getElementById("messages-container");
-  
     const queryMessages = query(
       messagesRef,
       where("room", "==", room),
@@ -41,10 +39,22 @@ export const Chat = (props) => {
       snapshot.forEach((doc) => {
         messages.push({ ...doc.data(), id: doc.id });
       });
-      setCombinedItems([...messages]); // Clear the previous state and set to new messages
+      setCombinedItems([...messages]);
       scrollToBottom();
+
+      const currentUser = auth.currentUser.displayName;
+      const newMessages = messages.filter(
+        (msg) =>
+          msg.user !== currentUser &&
+          msg.createdAt > lastReadTime &&
+          msg.createdAt === messages[messages.length - 1].createdAt // Only consider the last message
+      );
+      if (newMessages.length > 0) {
+        setUnreadCount((prevCount) => prevCount + newMessages.length);
+        notifyNewMessage(newMessages[0]); // Notify with the content of the last message
+      }
     });
-  
+
     const queryImages = query(
       imagesRef,
       where("room", "==", room),
@@ -55,17 +65,40 @@ export const Chat = (props) => {
       snapshot.forEach((doc) => {
         images.push({ ...doc.data(), id: doc.id });
       });
-      setCombinedItems((prevItems) => [...prevItems, ...images]); // Append images to existing state
+      setCombinedItems((prevItems) => [...prevItems, ...images]);
       scrollToBottom();
     });
-  
+
     return () => {
       unsubscribeMessages();
       unsubscribeImages();
     };
-  }, [room]);
-  
-  
+  }, [room, lastReadTime]);
+
+  const notifyNewMessage = (latestMessage) => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      const options = {
+        body: latestMessage.text,
+      };
+
+      new Notification("Chat Notification", options);
+    }
+  };
+
+  const handleVisibilityChange = () => {
+    if (!document.hidden) {
+      setUnreadCount(0);
+      setLastReadTime(Date.now());
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const scrollToBottom = () => {
     const messagesContainer = document.getElementById("messages-container");
@@ -129,7 +162,9 @@ export const Chat = (props) => {
   return (
     <div className="chat-app">
       <div className="header">
-        <h1> {room}</h1>
+        <h1>
+          {room} {unreadCount > 0 && `(${unreadCount} new)`}
+        </h1>
       </div>
       <div
         id="messages-container"
@@ -182,19 +217,6 @@ export const Chat = (props) => {
         <button className="send-button" type="submit">
           Mandai
         </button>
-        {/*	<div className="file-input-container">
-          <input
-            className="input-file"
-            type="file"
-            accept="image/jpeg, image/png"
-            id="fileInput"
-            onChange={(event) => setImageUpload(event.target.files[0])}
-          />
-          <label className="button" onClick={uploadImage}>
-            Upload
-          </label>
-        </div>*/}
-        
       </form>
       <button className="button" onClick={handleRefresh}>
         Farto desta merda
@@ -202,4 +224,3 @@ export const Chat = (props) => {
     </div>
   );
 };
-
