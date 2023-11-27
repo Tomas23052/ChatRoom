@@ -5,7 +5,13 @@ import Cookies from "universal-cookie";
 import { Chat } from "./components/Chat";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
+import { UserList } from "./components/UserList";
+import { deleteDoc } from "firebase/firestore";
+import { collection, doc, query, where, getDocs } from "firebase/firestore";
+import { db } from "./firebase-config.js";
 const cookies = new Cookies();
+const onlineUsers = collection(db, "onlineUsers");
+
 
 function App() {
   const [isAuth, setIsAuth] = useState(cookies.get("auth-token"));
@@ -31,10 +37,23 @@ function App() {
   }, []);
 
   const signUserOut = async () => {
-    await signOut(auth);
-    cookies.remove("auth-token");
-    setIsAuth(false);
-    setRoom(null);
+    const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
+    const querySnapshot = await getDocs(q);
+  
+    if (!querySnapshot.empty) {
+      const documentSnapshot = querySnapshot.docs[0];
+      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+  
+      try {
+        await deleteDoc(onlineUserDoc);
+        await signOut(auth);
+        cookies.remove("auth-token");
+        setIsAuth(false);
+        setRoom(null);
+      } catch (error) {
+        console.error('Error deleting online user:', error);
+      }
+    }
   };
 
   if (!isAuth) {
@@ -51,6 +70,7 @@ function App() {
         <Chat room={room} />
       ) : (
         <div style={{ marginLeft: "10px" }}>
+          <UserList />
           <h1>Chats disponíveis:</h1>
           <h3 className="h3" onClick={() => setRoom("SLANDER")}>
             - SLANDER

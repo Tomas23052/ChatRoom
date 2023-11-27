@@ -7,6 +7,8 @@ import {
   query,
   where,
   orderBy,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase-config.js";
 import { updateProfile } from "firebase/auth";
@@ -15,6 +17,8 @@ import { ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { getDownloadURL } from "firebase/storage";
 import "../styles/Chat.css";
+
+const onlineUsers = collection(db, "onlineUsers");
 
 export const Chat = (props) => {
   const { room } = props;
@@ -34,6 +38,12 @@ export const Chat = (props) => {
       where("room", "==", room),
       orderBy("createdAt", "asc")
     );
+    
+    const userRef = doc(onlineUsers, auth.currentUser.displayName);
+    updateDoc(userRef, {
+      room: room,
+    });
+  
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {

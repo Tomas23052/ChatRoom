@@ -4,7 +4,12 @@ import { updateProfile } from 'firebase/auth';
 import Cookies from "universal-cookie";
 import React, { useState, useEffect } from 'react';
 import "../styles/Auth.css";
+import { collection } from "firebase/firestore";
+import { addDoc } from "firebase/firestore";
+import { db } from "../firebase-config.js";
+
 const cookies = new Cookies();
+const onlineUsers = collection(db, "onlineUsers");
 
 function Title() {
   useEffect(() => {
@@ -34,6 +39,12 @@ export const Auth = (props) => {
         await updateProfile(result.user, { displayName: displayName });
       }
       cookies.set("auth-token", result.user.refreshToken);
+      await addDoc(onlineUsers, {
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        uid : result.user.uid,
+        room: ""
+      });
       setIsAuth(true);
     } catch (error) {
       console.log(error);
