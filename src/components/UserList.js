@@ -10,8 +10,11 @@ export const UserList = () => {
 
     const unsubscribe = onSnapshot(onlineUsersRef, (snapshot) => {
       const userList = snapshot.docs.map((doc) => ({
-        uid: doc.id,
+        uid: doc.data().uid,
         displayName: doc.data().displayName,
+        photoURL: doc.data().photoURL,
+        room: doc.data().room,
+
       }));
       setOnlineUsers(userList);
     });
@@ -27,8 +30,9 @@ export const UserList = () => {
       <h2>Online User List</h2>
       <ul>
         {onlineUsers.map((user) => (
-          <li key={user.uid}>{user.displayName} - {user.room}</li>
+          <li key={user.uid}>{user.displayName} - {user.room || "O gaijo está no caralho, ou há espera dele"}</li>
         ))}
+        {console.log(onlineUsers)}
       </ul>
     </div>
   );
