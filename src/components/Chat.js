@@ -59,10 +59,6 @@ export const Chat = (props) => {
           msg.createdAt > lastReadTime &&
           msg.createdAt === messages[messages.length - 1].createdAt // Only consider the last message
       );
-      if (newMessages.length > 0) {
-        setUnreadCount((prevCount) => prevCount + newMessages.length);
-        notifyNewMessage(newMessages[0]); // Notify with the content of the last message
-      }
     });
 
     const queryImages = query(
@@ -83,17 +79,9 @@ export const Chat = (props) => {
       unsubscribeMessages();
       unsubscribeImages();
     };
-  }, [room, lastReadTime]);
+  }, [room]);
 
-  const notifyNewMessage = (latestMessage) => {
-    if ("Notification" in window && Notification.permission === "granted") {
-      const options = {
-        body: latestMessage.text,
-      };
 
-      new Notification("Chat Notification", options);
-    }
-  };
 
   const handleVisibilityChange = () => {
     if (!document.hidden) {
