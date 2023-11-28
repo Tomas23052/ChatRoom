@@ -155,6 +155,7 @@ export const Chat = (props) => {
   };
 
   const handleRefresh = () => {
+
     window.location.reload();
   };
 
@@ -236,6 +237,7 @@ export const Chat = (props) => {
         </button>
       </form>
       <button className="button" onClick={handleRefresh}>
+        {}
         Farto desta merda
       </button>
     </div>

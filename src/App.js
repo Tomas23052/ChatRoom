@@ -7,7 +7,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { UserList } from "./components/UserList";
 import { deleteDoc } from "firebase/firestore";
-import { collection, doc, query, where, getDocs } from "firebase/firestore";
+import { collection, doc, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase-config.js";
 const cookies = new Cookies();
 const onlineUsers = collection(db, "onlineUsers");
@@ -22,12 +22,24 @@ function App() {
     document.title = "CHATROOM SALAS FIXES";
 
     
+    
+    
     // Listen for changes in the authentication state
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         // If the user is signed in, update the display name state
         setDisplayName(user.displayName);
         //setColor(user.photoURL);
+        const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
+        const querySnapshot = onSnapshot(q, (snapshot) => {
+        if (!querySnapshot.empty) {
+        const documentSnapshot = snapshot.docs[0];
+        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+        updateDoc(onlineUserDoc, {
+          room: null,
+        });
+      }
+    });
         console.log(user);
       }
     });
