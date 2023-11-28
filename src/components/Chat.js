@@ -39,11 +39,18 @@ export const Chat = (props) => {
       orderBy("createdAt", "asc")
     );
     
-    const userRef = doc(onlineUsers, auth.currentUser.uid);
-    updateDoc(userRef, {
-      room: room,
+
+    const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
+    const querySnapshot = onSnapshot(q, (snapshot) => {
+      if (!querySnapshot.empty) {
+        const documentSnapshot = snapshot.docs[0];
+        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+        updateDoc(onlineUserDoc, {
+          room: room,
+        });
+      }
     });
-  
+    
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {

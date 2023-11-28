@@ -45,6 +45,7 @@ export const Auth = (props) => {
         uid : result.user.uid,
         room: ""
       });
+      
       setIsAuth(true);
     } catch (error) {
       console.log(error);
