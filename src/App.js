@@ -60,6 +60,8 @@ function App() {
     }
   };
 
+  //AGORA ESTÁ FEITO
+
   if (!isAuth) {
     return (
       <div className="App">
