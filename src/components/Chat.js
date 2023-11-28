@@ -9,6 +9,8 @@ import {
   orderBy,
   doc,
   updateDoc,
+  getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase-config.js";
 import { updateProfile } from "firebase/auth";
@@ -22,6 +24,7 @@ const onlineUsers = collection(db, "onlineUsers");
 
 export const Chat = (props) => {
   const { room } = props;
+  const [roomSet, setRoomSet] = useState(false); // Track whether setRoom has been called
   const [newMessage, setNewMessage] = useState("");
   const [combinedItems, setCombinedItems] = useState([]);
   const messagesRef = collection(db, "messages");
@@ -38,19 +41,7 @@ export const Chat = (props) => {
       where("room", "==", room),
       orderBy("createdAt", "asc")
     );
-    
-
-    const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
-    const querySnapshot = onSnapshot(q, (snapshot) => {
-      if (!querySnapshot.empty) {
-        const documentSnapshot = snapshot.docs[0];
-        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-        updateDoc(onlineUserDoc, {
-          room: room,
-        });
-      }
-    });
-    
+  
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {
@@ -125,6 +116,7 @@ export const Chat = (props) => {
   };
 
   useLayoutEffect(() => {
+
     const user = auth.currentUser;
     if (user) {
       setDisplayName(user.displayName);
@@ -140,6 +132,29 @@ export const Chat = (props) => {
     document.getElementsByClassName("new-message-input")[0].focus();
   }, [room]);
 
+  const setRoom = async () => {
+    const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
+    const querySnapshot = onSnapshot(q, (snapshot) => {
+      if (!querySnapshot.empty) {
+        const documentSnapshot = snapshot.docs[0];
+        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+        updateDoc(onlineUserDoc, {
+          room: room,
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!roomSet) {
+      setRoom();
+      setRoomSet(true);
+    }
+  }, [room, roomSet]);
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (newMessage === "") return;
@@ -154,10 +169,33 @@ export const Chat = (props) => {
     setNewMessage("");
   };
 
-  const handleRefresh = () => {
+  const leaveRoom = async () => {
+    
+      const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
+      const querySnapshot = await getDocs(q);
 
-    window.location.reload();
+      if (!querySnapshot.empty) {
+        const documentSnapshot = querySnapshot.docs[0];
+        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+
+        await updateDoc(onlineUserDoc, {
+          room: "",
+        });
+
+
+
+        // Optionally, you can trigger additional updates or actions here based on leaving the room
+      }
+
   };
+  
+  const handleRefresh = async () => {
+    await leaveRoom();
+    window.location.reload();
+
+  };
+  
+  
 
   const uploadImage = async () => {
     if (imageUpload == null) return;
@@ -237,7 +275,6 @@ export const Chat = (props) => {
         </button>
       </form>
       <button className="button" onClick={handleRefresh}>
-        {}
         Farto desta merda
       </button>
     </div>

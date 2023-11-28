@@ -7,7 +7,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
 import { UserList } from "./components/UserList";
 import { deleteDoc } from "firebase/firestore";
-import { collection, doc, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
+import { collection, doc, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase-config.js";
 const cookies = new Cookies();
 const onlineUsers = collection(db, "onlineUsers");
@@ -29,8 +29,7 @@ function App() {
       if (user) {
         // If the user is signed in, update the display name state
         setDisplayName(user.displayName);
-        //setColor(user.photoURL);
-      
+        //setColor(user.photoURL)
         console.log(user);
       }
     });
