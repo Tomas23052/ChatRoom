@@ -39,7 +39,7 @@ export const Chat = (props) => {
       orderBy("createdAt", "asc")
     );
     
-    const userRef = doc(onlineUsers, auth.currentUser.displayName);
+    const userRef = doc(onlineUsers, auth.currentUser.uid);
     updateDoc(userRef, {
       room: room,
     });
