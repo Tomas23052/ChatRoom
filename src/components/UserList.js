@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase-config';
 import { collection, onSnapshot } from 'firebase/firestore';
+import "../styles/UserList.css";
 
 export const UserList = () => {
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -32,6 +33,7 @@ export const UserList = () => {
         {onlineUsers.map((user) => (
           <li key={user.uid}><span style={{color: user.photoURL}}>{user.displayName}</span> - {user.room || "O gaijo/a está no caralho, ou há espera dele"}</li>
         ))}
+        {console.log(onlineUsers)}
       </ul>
     </div>
   );
