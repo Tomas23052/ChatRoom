@@ -211,6 +211,7 @@ export const Chat = (props) => {
     return setImageUpload(null);
   };
 
+
   return (
     <div className="chat-app">
       <div className="header">
@@ -227,9 +228,14 @@ export const Chat = (props) => {
           .sort((a, b) => a.createdAt - b.createdAt)
           .map((item) => (
             <div className="message" key={item.id}>
+              <div></div>
               <span className="user" style={{ color: item.photoURL }}>
-                {item.user}
+                {item.user} 
               </span>
+              <span className="date">
+              {new Date(item.createdAt.seconds * 1000).toLocaleString("pt-PT")}
+              </span>
+              
               {item.text && <div>{item.text}</div>}
               {item.imageUrl && (
                 <img
