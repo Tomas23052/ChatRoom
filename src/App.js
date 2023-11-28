@@ -30,16 +30,7 @@ function App() {
         // If the user is signed in, update the display name state
         setDisplayName(user.displayName);
         //setColor(user.photoURL);
-        const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
-        const querySnapshot = onSnapshot(q, (snapshot) => {
-        if (!querySnapshot.empty) {
-        const documentSnapshot = snapshot.docs[0];
-        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-        updateDoc(onlineUserDoc, {
-          room: null,
-        });
-      }
-    });
+      
         console.log(user);
       }
     });
