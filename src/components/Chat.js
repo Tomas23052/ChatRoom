@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   addDoc,
   collection,
@@ -24,7 +24,7 @@ const onlineUsers = collection(db, "onlineUsers");
 
 export const Chat = (props) => {
   const { room } = props;
-  const [roomSet, setRoomSet] = useState(false); // Track whether setRoom has been called
+  const [roomSet, setRoomSet] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [combinedItems, setCombinedItems] = useState([]);
   const messagesRef = collection(db, "messages");
@@ -41,6 +41,8 @@ export const Chat = (props) => {
       where("room", "==", room),
       orderBy("createdAt", "asc")
     );
+
+    roomRef.current = room;
   
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
@@ -134,24 +136,29 @@ export const Chat = (props) => {
 
   const setRoom = async () => {
     const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
-    const querySnapshot = onSnapshot(q, (snapshot) => {
-      if (!querySnapshot.empty) {
-        const documentSnapshot = snapshot.docs[0];
-        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-        updateDoc(onlineUserDoc, {
-          room: room,
-        });
-      }
-    });
-  };
+  
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {  
+      const documentSnapshot = querySnapshot.docs[0];
+      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+      
+      await updateDoc(onlineUserDoc, {
+        room: roomRef.current, 
+      });
+    }
+  }
+
+  const roomRef = useRef(null);
 
   useEffect(() => {
-    if (!roomSet) {
+    if (!roomSet && roomRef.current) {
       setRoom();
-      setRoomSet(true);
+      setRoomSet(true); 
     }
-  }, [room, roomSet]);
-
+  }, [roomSet])
+  
+  
 
 
 
@@ -182,6 +189,7 @@ export const Chat = (props) => {
           room: "",
         });
 
+        roomRef.current = null;
 
 
         // Optionally, you can trigger additional updates or actions here based on leaving the room
