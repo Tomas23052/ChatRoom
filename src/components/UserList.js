@@ -13,7 +13,7 @@ export const UserList = () => {
       const userList = snapshot.docs.map((doc) => ({
         uid: doc.data().uid,
         displayName: doc.data().displayName,
-        photoURL: document.getElementById("colorPicker").value,
+        photoURL: doc.data().photoURL,
         room: doc.data().room,
 
       }));
