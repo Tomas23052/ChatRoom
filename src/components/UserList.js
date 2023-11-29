@@ -28,7 +28,7 @@ export const UserList = () => {
 
   return (
     <div>
-      <h2>Online User List</h2>
+      <h2>Gaijo(a)s que estão por aí</h2>
       <ul>
         {onlineUsers.map((user) => (
           <li key={user.uid}><span style={{color: user.photoURL}}>{user.displayName}</span> - {user.room || "O gaijo/a está no caralho, ou há espera dele"}</li>

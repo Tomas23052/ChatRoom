@@ -43,7 +43,7 @@ export const Chat = (props) => {
     );
 
     roomRef.current = room;
-  
+
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {
@@ -81,8 +81,6 @@ export const Chat = (props) => {
     };
   }, [room]);
 
-
-
   const handleVisibilityChange = () => {
     if (!document.hidden) {
       setUnreadCount(0);
@@ -106,7 +104,6 @@ export const Chat = (props) => {
   };
 
   useLayoutEffect(() => {
-
     const user = auth.currentUser;
     if (user) {
       setDisplayName(user.displayName);
@@ -123,32 +120,28 @@ export const Chat = (props) => {
   }, [room]);
 
   const setRoom = async () => {
-    const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
-  
+    const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
+
     const querySnapshot = await getDocs(q);
-    
-    if (!querySnapshot.empty) {  
+
+    if (!querySnapshot.empty) {
       const documentSnapshot = querySnapshot.docs[0];
       const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-      
+
       await updateDoc(onlineUserDoc, {
-        room: roomRef.current, 
+        room: roomRef.current,
       });
     }
-  }
+  };
 
   const roomRef = useRef(null);
 
   useEffect(() => {
     if (!roomSet && roomRef.current) {
       setRoom();
-      setRoomSet(true); 
+      setRoomSet(true);
     }
-  }, [roomSet])
-  
-  
-
-
+  }, [roomSet]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -165,33 +158,27 @@ export const Chat = (props) => {
   };
 
   const leaveRoom = async () => {
-    
-      const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
-      const querySnapshot = await getDocs(q);
+    const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
+    const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        const documentSnapshot = querySnapshot.docs[0];
-        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+    if (!querySnapshot.empty) {
+      const documentSnapshot = querySnapshot.docs[0];
+      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
 
-        await updateDoc(onlineUserDoc, {
-          room: "",
-        });
+      await updateDoc(onlineUserDoc, {
+        room: "",
+      });
 
-        roomRef.current = null;
+      roomRef.current = null;
 
-
-        // Optionally, you can trigger additional updates or actions here based on leaving the room
-      }
-
+      // Optionally, you can trigger additional updates or actions here based on leaving the room
+    }
   };
-  
+
   const handleRefresh = async () => {
     await leaveRoom();
     window.location.reload();
-
   };
-  
-  
 
   const uploadImage = async () => {
     if (imageUpload == null) return;
@@ -211,6 +198,14 @@ export const Chat = (props) => {
     return setImageUpload(null);
   };
 
+  const dates = {};
+  combinedItems.forEach( async (item) =>   {
+    if (item.createdAt) {
+      const date = item.createdAt.toDate().toLocaleDateString("pt-PT");
+      if (!dates[date]) dates[date] = [];
+      dates[date].push(item);
+    }
+  });
 
   return (
     <div className="chat-app">
@@ -219,44 +214,51 @@ export const Chat = (props) => {
           {room} {unreadCount > 0 && `(${unreadCount} new)`}
         </h1>
       </div>
-      <div
-        id="messages-container"
-        className="messages"
-        style={{ overflow: "auto", height: "600px" }}
-      >
-        {combinedItems
-          .sort((a, b) => a.createdAt - b.createdAt)
-          .map((item) => (
-            <div className="message" key={item.id}>
-              <div></div>
-              <span className="user" style={{ color: item.photoURL }}>
-                {item.user} 
-              </span>
-              <span className="date">
-              {new Date(item.createdAt.seconds * 1000).toLocaleString("pt-PT")}
-              </span>
-              
-              {item.text && <div>{item.text}</div>}
-              {item.imageUrl && (
-                <img
-                  src={item.imageUrl}
-                  alt={`Uploaded by ${item.user}`}
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "300px",
-                    marginTop: "10px",
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        <div
-          ref={(el) => {
-            if (el) {
-              el.scrollIntoView({ behavior: "instant" });
-            }
-          }}
-        ></div>
+      <div id="messages-container"
+      className="messages"
+      style={{ overflow: "auto", height: "600px" }}
+    >
+        {Object.keys(dates).map((date) => (
+          <div key={date}>
+            <div className="date">{date}</div>
+
+            {dates[date].map((item) => (
+              <div className="message" key={item.id}>
+                <span className="user" style={{ color: item.photoURL }}>
+                  {item.user}
+                </span>
+                <span className="date">
+                  {item.createdAt
+                    ? item.createdAt.toDate().toLocaleTimeString("pt-PT", {
+                        hour: "numeric",
+                        minute: "numeric",
+                      })
+                    : item.createdAt}
+                </span>
+
+                {item.text && <div>{item.text}</div>}
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={`Uploaded by ${item.user}`}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "300px",
+                      marginTop: "10px",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+            <div
+              ref={(el) => {
+                if (el) {
+                  el.scrollIntoView({ behavior: "instant" });
+                }
+              }}
+            ></div>
+          </div>
+        ))}
       </div>
 
       <form onSubmit={handleSubmit} className="new-message-form">
