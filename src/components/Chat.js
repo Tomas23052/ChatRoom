@@ -29,7 +29,7 @@ import {
   faShare,
   faTrash,
   faEdit,
-  faE,
+  faReply,
 } from "@fortawesome/free-solid-svg-icons";
 
 const onlineUsers = collection(db, "onlineUsers");
@@ -46,6 +46,8 @@ export const Chat = (props) => {
   const [imageUpload, setImageUpload] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [lastReadTime, setLastReadTime] = useState(0);
+  const [replyToId, setReplyToId] = useState(null);
+
 
   useEffect(() => {
     const queryMessages = query(
@@ -53,6 +55,8 @@ export const Chat = (props) => {
       where("room", "==", room),
       orderBy("createdAt", "asc")
     );
+
+    
 
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
@@ -84,6 +88,8 @@ export const Chat = (props) => {
       setCombinedItems((prevItems) => [...prevItems, ...images]);
       scrollToBottom();
     });
+
+    console.log(auth.currentUser);
 
     return () => {
       unsubscribeMessages();
@@ -159,8 +165,9 @@ export const Chat = (props) => {
       text: newMessage,
       createdAt: serverTimestamp(),
       user: auth.currentUser.displayName,
-      photoURL: photoURL,
+      photoURL: document.getElementById("colorPicker").value,
       room,
+      
     });
     setNewMessage("");
   };
@@ -238,6 +245,23 @@ export const Chat = (props) => {
       await deleteDoc(docRef);
     }
   };
+
+  const startReply = (id) => {
+  setReplyToId(id);
+};
+
+const [replyText, setReplyText] = useState("");
+
+const submitReply = async () => {
+  await db.collection("replies").add({
+    text: replyText,
+    replyTo: replyToId,
+    // Add other fields as needed, such as the user and timestamp
+  });
+
+  setReplyText("");
+  setReplyToId(null);
+};
 
   return (
     <div className="col chat-app">
@@ -329,20 +353,36 @@ export const Chat = (props) => {
                     <span>{item.text}</span>
                     {item.user === auth.currentUser.displayName && (
                       <div>
-                        <button style={{ background: "none", border: "none" }} onClick={() => editMessage(item)}>
+                        <button
+                          style={{ background: "none", border: "none" }}
+                          onClick={() => editMessage(item)}
+                        >
                           <FontAwesomeIcon
                             icon={faEdit}
                             size="sm"
                           ></FontAwesomeIcon>
                         </button>
-                        <button style={{ background: "none", border: "none" }} onClick={() => removeMessage(item)}>
+                        <button
+                          style={{ background: "none", border: "none" }}
+                          onClick={() => removeMessage(item)}
+                        >
                           <FontAwesomeIcon
                             icon={faTrash}
                             size="sm"
                           ></FontAwesomeIcon>
                         </button>
+                       <button
+                          style={{ background: "none", border: "none" }}
+                          onClick={() => startReply(item.id)}
+                        >
+                          <FontAwesomeIcon
+                            icon={faReply}
+                            size="sm"
+                          ></FontAwesomeIcon>
+                        </button>
                       </div>
                     )}
+                     
                   </div>
                 )}
                 {item.imageUrl && (

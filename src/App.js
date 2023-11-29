@@ -9,6 +9,7 @@ import { deleteDoc } from "firebase/firestore";
 import { collection, doc, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase-config.js";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 const cookies = new Cookies();
 const onlineUsers = collection(db, "onlineUsers");
 
@@ -26,7 +27,7 @@ function App() {
       if (user) {
         // If the user is signed in, update the display name state
         setDisplayName(user.displayName);
-        //setColor(user.photoURL)
+        document.getElementById("colorPicker").value = user.photoURL; 
         console.log(user);
       }
     });
@@ -60,7 +61,7 @@ function App() {
     }
   };
 
-  //AGORA ESTÁ FEITO
+  
 
   if (!isAuth) {
     return (
