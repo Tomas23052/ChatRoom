@@ -22,8 +22,15 @@ import "../styles/Chat.css";
 import { UserList } from "./UserList";
 
 // Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightFromBracket, faUsers, faShare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faRightFromBracket,
+  faUsers,
+  faShare,
+  faTrash,
+  faEdit,
+  faE,
+} from "@fortawesome/free-solid-svg-icons";
 
 const onlineUsers = collection(db, "onlineUsers");
 
@@ -62,7 +69,6 @@ export const Chat = (props) => {
           msg.createdAt > lastReadTime &&
           msg.createdAt === messages[messages.length - 1].createdAt // Only consider the last message
       );
-
     });
 
     const queryImages = query(
@@ -107,9 +113,9 @@ export const Chat = (props) => {
     }
   };
 
- useLayoutEffect(() => {
+  useLayoutEffect(() => {
     const user = auth.currentUser;
-    
+
     if (user) {
       setDisplayName(user.displayName);
 
@@ -121,20 +127,19 @@ export const Chat = (props) => {
         document.getElementById("colorPicker").value = user.photoURL;
       }
     }
-    
 
     document.getElementsByClassName("new-message-input")[0].focus();
   }, [room]);
 
   const handleClickRoom = async (newRoom) => {
     const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
-  
+
     const querySnapshot = await getDocs(q);
-  
+
     if (!querySnapshot.empty) {
       const documentSnapshot = querySnapshot.docs[0];
       const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-  
+
       await updateDoc(onlineUserDoc, {
         room: newRoom,
       });
@@ -142,7 +147,7 @@ export const Chat = (props) => {
       // Use setRoom to update the room value
       setRoom(newRoom);
     }
-  
+
     console.log("CurrentRoom: " + room); // This might not immediately reflect the updated room value due to the asynchronous nature of state updates
   };
 
@@ -195,7 +200,7 @@ export const Chat = (props) => {
   };
 
   const dates = {};
-  combinedItems.forEach( async (item) =>   {
+  combinedItems.forEach(async (item) => {
     if (item.createdAt) {
       const date = item.createdAt.toDate().toLocaleDateString("pt-PT");
       if (!dates[date]) dates[date] = [];
@@ -208,7 +213,7 @@ export const Chat = (props) => {
     if (userList) {
       const computedStyles = getComputedStyle(userList);
       const visibility = computedStyles.visibility;
-  
+
       if (visibility === "visible") {
         userList.style.visibility = "hidden";
       } else {
@@ -217,15 +222,70 @@ export const Chat = (props) => {
     }
   };
 
+  const editMessage = async (item) => {
+    const newText = prompt("Edit your message:", item.text);
+    if (newText) {
+      const docRef = doc(db, "messages", item.id);
+      await updateDoc(docRef, {
+        text: newText,
+      });
+    }
+  };
+
+  const removeMessage = async (item) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      const docRef = doc(db, "messages", item.id);
+      await deleteDoc(docRef);
+    }
+  };
+
   return (
     <div className="col chat-app">
       <div className="row d-flex tabList">
-        <div className={`col-1 roomTab ${room === "SLANDER" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("SLANDER")}>Slander</div>
-        <div className={`col-1 roomTab ${room === "CD" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("CD")}>CD</div>
-        <div className={`col-1 roomTab ${room === "DEV-MOVEIS" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("DEV-MOVEIS")}>Dev-Moveis</div>
-        <div className={`col-1 roomTab ${room === "ENG-SOFTWARE" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("ENG-SOFTWARE")}>Eng-Software</div>
-        <div className={`col-1 roomTab ${room === "IRL" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("IRL")}>IRL</div>
-        <div className={`col-1 roomTab ${room === "SEG-INF" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("SEG-INF")}>Seg-Inf</div>
+        <div
+          className={`col-1 roomTab ${
+            room === "SLANDER" ? "selectedRoomTab" : ""
+          }`}
+          onClick={() => handleClickRoom("SLANDER")}
+        >
+          Slander
+        </div>
+        <div
+          className={`col-1 roomTab ${room === "CD" ? "selectedRoomTab" : ""}`}
+          onClick={() => handleClickRoom("CD")}
+        >
+          CD
+        </div>
+        <div
+          className={`col-1 roomTab ${
+            room === "DEV-MOVEIS" ? "selectedRoomTab" : ""
+          }`}
+          onClick={() => handleClickRoom("DEV-MOVEIS")}
+        >
+          Dev-Moveis
+        </div>
+        <div
+          className={`col-1 roomTab ${
+            room === "ENG-SOFTWARE" ? "selectedRoomTab" : ""
+          }`}
+          onClick={() => handleClickRoom("ENG-SOFTWARE")}
+        >
+          Eng-Software
+        </div>
+        <div
+          className={`col-1 roomTab ${room === "IRL" ? "selectedRoomTab" : ""}`}
+          onClick={() => handleClickRoom("IRL")}
+        >
+          IRL
+        </div>
+        <div
+          className={`col-1 roomTab ${
+            room === "SEG-INF" ? "selectedRoomTab" : ""
+          }`}
+          onClick={() => handleClickRoom("SEG-INF")}
+        >
+          Seg-Inf
+        </div>
 
         <div className="col">
           <div className="row otherTabs">
@@ -240,7 +300,7 @@ export const Chat = (props) => {
       </div>
 
       <div id="messages-container" className="row messages">
-      {Object.keys(dates).map((date) => (
+        {Object.keys(dates).map((date) => (
           <div key={date}>
             <div className="date">{date}</div>
 
@@ -258,7 +318,33 @@ export const Chat = (props) => {
                     : item.createdAt}
                 </span>
 
-                {item.text && <div>{item.text}</div>}
+                {item.text && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span>{item.text}</span>
+                    {item.user === auth.currentUser.displayName && (
+                      <div>
+                        <button style={{ background: "none", border: "none" }} onClick={() => editMessage(item)}>
+                          <FontAwesomeIcon
+                            icon={faEdit}
+                            size="sm"
+                          ></FontAwesomeIcon>
+                        </button>
+                        <button style={{ background: "none", border: "none" }} onClick={() => removeMessage(item)}>
+                          <FontAwesomeIcon
+                            icon={faTrash}
+                            size="sm"
+                          ></FontAwesomeIcon>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {item.imageUrl && (
                   <img
                     src={item.imageUrl}
@@ -272,6 +358,7 @@ export const Chat = (props) => {
                 )}
               </div>
             ))}
+
             <div
               ref={(el) => {
                 if (el) {
@@ -304,7 +391,6 @@ export const Chat = (props) => {
       <div id="userList">
         <UserList></UserList>
       </div>
-      
     </div>
     /*<div className="chat-app">
       <div className="header">
