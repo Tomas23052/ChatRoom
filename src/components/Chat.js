@@ -19,11 +19,16 @@ import { ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { getDownloadURL } from "firebase/storage";
 import "../styles/Chat.css";
+import { UserList } from "./UserList";
+
+// Icons
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRightFromBracket, faUsers, faShare } from '@fortawesome/free-solid-svg-icons';
 
 const onlineUsers = collection(db, "onlineUsers");
 
 export const Chat = (props) => {
-  const { room } = props;
+  const { room, setRoom, signOutFunction } = props;
   const [roomSet, setRoomSet] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [combinedItems, setCombinedItems] = useState([]);
@@ -42,8 +47,6 @@ export const Chat = (props) => {
       orderBy("createdAt", "asc")
     );
 
-    roomRef.current = room;
-
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
       let messages = [];
       snapshot.forEach((doc) => {
@@ -59,6 +62,7 @@ export const Chat = (props) => {
           msg.createdAt > lastReadTime &&
           msg.createdAt === messages[messages.length - 1].createdAt // Only consider the last message
       );
+
     });
 
     const queryImages = query(
@@ -103,45 +107,44 @@ export const Chat = (props) => {
     }
   };
 
-  useLayoutEffect(() => {
+ useLayoutEffect(() => {
     const user = auth.currentUser;
+    
     if (user) {
       setDisplayName(user.displayName);
+
+      if (user.photoURL == null) {
+        document.getElementById("colorPicker").value = "#000";
+        setColor(document.getElementById("colorPicker").value);
+      } else {
+        setColor(user.photoURL);
+        document.getElementById("colorPicker").value = user.photoURL;
+      }
     }
-    if (user.photoURL == null) {
-      document.getElementById("colorPicker").value = "#000";
-      setColor(document.getElementById("colorPicker").value);
-    } else {
-      setColor(user.photoURL);
-      document.getElementById("colorPicker").value = user.photoURL;
-    }
+    
 
     document.getElementsByClassName("new-message-input")[0].focus();
   }, [room]);
 
-  const setRoom = async () => {
+  const handleClickRoom = async (newRoom) => {
     const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
-
+  
     const querySnapshot = await getDocs(q);
-
+  
     if (!querySnapshot.empty) {
       const documentSnapshot = querySnapshot.docs[0];
       const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-
+  
       await updateDoc(onlineUserDoc, {
-        room: roomRef.current,
+        room: newRoom,
       });
+
+      // Use setRoom to update the room value
+      setRoom(newRoom);
     }
+  
+    console.log("CurrentRoom: " + room); // This might not immediately reflect the updated room value due to the asynchronous nature of state updates
   };
-
-  const roomRef = useRef(null);
-
-  useEffect(() => {
-    if (!roomSet && roomRef.current) {
-      setRoom();
-      setRoomSet(true);
-    }
-  }, [roomSet]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -169,15 +172,8 @@ export const Chat = (props) => {
         room: "",
       });
 
-      roomRef.current = null;
-
       // Optionally, you can trigger additional updates or actions here based on leaving the room
     }
-  };
-
-  const handleRefresh = async () => {
-    await leaveRoom();
-    window.location.reload();
   };
 
   const uploadImage = async () => {
@@ -207,8 +203,110 @@ export const Chat = (props) => {
     }
   });
 
+  const showHideUsers = () => {
+    const userList = document.getElementById("userList");
+    if (userList) {
+      const computedStyles = getComputedStyle(userList);
+      const visibility = computedStyles.visibility;
+  
+      if (visibility === "visible") {
+        userList.style.visibility = "hidden";
+      } else {
+        userList.style.visibility = "visible";
+      }
+    }
+  };
+
   return (
-    <div className="chat-app">
+    <div className="col chat-app">
+      <div className="row d-flex tabList">
+        <div className={`col-1 roomTab ${room === "SLANDER" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("SLANDER")}>Slander</div>
+        <div className={`col-1 roomTab ${room === "CD" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("CD")}>CD</div>
+        <div className={`col-1 roomTab ${room === "DEV-MOVEIS" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("DEV-MOVEIS")}>Dev-Moveis</div>
+        <div className={`col-1 roomTab ${room === "ENG-SOFTWARE" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("ENG-SOFTWARE")}>Eng-Software</div>
+        <div className={`col-1 roomTab ${room === "IRL" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("IRL")}>IRL</div>
+        <div className={`col-1 roomTab ${room === "SEG-INF" ? "selectedRoomTab" : ""}`} onClick={() => handleClickRoom("SEG-INF")}>Seg-Inf</div>
+
+        <div className="col">
+          <div className="row otherTabs">
+            <div className="col-1 roomTab otherTab" onClick={showHideUsers}>
+              <FontAwesomeIcon icon={faUsers} />
+            </div>
+            <div className="col-1 roomTab otherTab" onClick={signOutFunction}>
+              <FontAwesomeIcon icon={faRightFromBracket} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="messages-container" className="row messages">
+      {Object.keys(dates).map((date) => (
+          <div key={date}>
+            <div className="date">{date}</div>
+
+            {dates[date].map((item) => (
+              <div className="message" key={item.id}>
+                <span className="user" style={{ color: item.photoURL }}>
+                  {item.user}
+                </span>
+                <span className="date">
+                  {item.createdAt
+                    ? item.createdAt.toDate().toLocaleTimeString("pt-PT", {
+                        hour: "numeric",
+                        minute: "numeric",
+                      })
+                    : item.createdAt}
+                </span>
+
+                {item.text && <div>{item.text}</div>}
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={`Uploaded by ${item.user}`}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "300px",
+                      marginTop: "10px",
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+            <div
+              ref={(el) => {
+                if (el) {
+                  el.scrollIntoView({ behavior: "instant" });
+                }
+              }}
+            ></div>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit} className="new-message-form">
+        <input
+          id="colorPicker"
+          className="color-picker"
+          type="color"
+          onChange={(e) => setColor(e.target.value)}
+        />
+        <input
+          className="new-message-input"
+          onChange={(e) => setNewMessage(e.target.value)}
+          value={newMessage}
+          placeholder="Type your message here..."
+        />
+        <button className="send-button" type="submit">
+          <FontAwesomeIcon icon={faShare} />
+        </button>
+      </form>
+
+      <div id="userList">
+        <UserList></UserList>
+      </div>
+      
+    </div>
+    /*<div className="chat-app">
       <div className="header">
         <h1>
           {room} {unreadCount > 0 && `(${unreadCount} new)`}
@@ -281,6 +379,6 @@ export const Chat = (props) => {
       <button className="button" onClick={handleRefresh}>
         Farto desta merda
       </button>
-    </div>
+    </div>*/
   );
 };

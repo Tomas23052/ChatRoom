@@ -27,7 +27,7 @@ export const UserList = () => {
   }, []);
 
   return (
-    <div>
+    <div className='mainUsers'>
       <h2>Gaijo(a)s que estão por aí</h2>
       <ul>
         {onlineUsers.map((user) => (
