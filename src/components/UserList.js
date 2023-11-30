@@ -15,7 +15,7 @@ export const UserList = () => {
         displayName: doc.data().displayName,
         photoURL: doc.data().photoURL,
         room: doc.data().room,
-
+        status: doc.data().status,
       }));
       setOnlineUsers(userList);
     });
@@ -28,10 +28,10 @@ export const UserList = () => {
 
   useEffect(() => {
     const checkInactiveUsers = async () => {
-      const oneHourAgo = new Date();
-      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+      const oneSecondAgo = new Date();
+      oneSecondAgo.setSeconds(oneSecondAgo.getSeconds() - 2);
   
-      const q = query(collection(db, "auth"), where("lastActive", "<", oneHourAgo));
+      const q = query(collection(db, "onlineUsers"), where("lastActiveAt", "<", oneSecondAgo));
   
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
@@ -42,7 +42,7 @@ export const UserList = () => {
     };
   
     // Check for inactive users every 5 minutes
-    const intervalId = setInterval(checkInactiveUsers, 5 * 60 * 1000);
+    const intervalId = setInterval(checkInactiveUsers, 10 * 1000);
   
     return () => {
       clearInterval(intervalId);
@@ -55,16 +55,18 @@ export const UserList = () => {
       <ul>
         {onlineUsers.map((user) => (
           <li 
-            key={user.uid}
-            style={{
-              color: user.status === "active" ? 'green' : user.status === 'logged out' ? 'red' : 'yellow',
-            }}
-          >
-            <span style={{listStyle: 'none'}}>
-              •
-            </span>
-            <span style={{color: user.photoURL}}>{user.displayName}</span> - {user.room || "SLANDER"}
-          </li>
+          key={user.uid}
+          className={
+            user.status === "active" 
+              ? "activeUser" 
+              : user.status === "logged out" 
+                ? "loggedOutUser" 
+                : "inactiveUser"
+          }
+        >
+         <span style={{color: user.photoURL}}>{user.displayName}</span> - {user.room || "SLANDER"}
+
+        </li>
         ))}
       </ul>
     </div>

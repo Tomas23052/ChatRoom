@@ -56,6 +56,8 @@ export const Chat = (props) => {
       orderBy("createdAt", "asc")
     );
 
+   
+
     
 
     const unsubscribeMessages = onSnapshot(queryMessages, (snapshot) => {
@@ -109,6 +111,41 @@ export const Chat = (props) => {
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
+      const querySnapshot = await getDocs(q);
+      const documentSnapshot = querySnapshot.docs[0];
+      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+  
+      if (document.visibilityState === 'hidden') {
+        await updateDoc(onlineUserDoc, {
+          lastActiveAt: new Date(),
+        });
+      }
+    };
+    const handleClick = async () => {
+      const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
+      const querySnapshot = await getDocs(q);
+      const documentSnapshot = querySnapshot.docs[0];
+      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+  
+      await updateDoc(onlineUserDoc, {
+        status: "active",
+        lastActiveAt: new Date(),
+      });
+    };
+  
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('click', handleClick);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('click', handleClick);
+
     };
   }, []);
 

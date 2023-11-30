@@ -55,6 +55,7 @@ export const Auth = (props) => {
           uid: result.user.uid,
           room: "",
           status: "active",
+          lastActiveAt: new Date(),
         });
       }
   
@@ -66,6 +67,7 @@ export const Auth = (props) => {
      
       
       
+
 
   return (
     <div className="auth">

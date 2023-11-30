@@ -13,6 +13,20 @@ ul {
     list-style: none; /* Remove default bullets */
   }
 
+  .activeUser::before {
+    content: "•";
+    color: green;
+  }
+  
+  .loggedOutUser::before {
+    content: "•";
+    color: red;
+  }
+  
+  .inactiveUser::before {
+    content: "•";
+    color: yellow;
+  }
   
 .mainUsers{
   width: 30vw;
