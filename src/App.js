@@ -5,7 +5,7 @@ import Cookies from "universal-cookie";
 import { Chat } from "./components/Chat";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase-config.js";
-import { deleteDoc } from "firebase/firestore";
+import { deleteDoc, updateDoc } from "firebase/firestore";
 import { collection, doc, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase-config.js";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -50,8 +50,10 @@ function App() {
       if (!querySnapshot.empty) {
         const documentSnapshot = querySnapshot.docs[0];
         const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-  
-        await deleteDoc(onlineUserDoc);
+        console.log(onlineUserDoc);
+        await updateDoc(onlineUserDoc, {
+          status: "logged out",
+        });
         await signOut(auth);
         cookies.remove("auth-token");
         setIsAuth(false);
@@ -60,6 +62,8 @@ function App() {
       console.error('Error occurred during sign-out:', error);
     }
   };
+
+
 
   
 

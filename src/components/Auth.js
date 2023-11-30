@@ -5,7 +5,7 @@ import Cookies from "universal-cookie";
 import React, { useState, useEffect } from 'react';
 import "../styles/Auth.css";
 import { collection } from "firebase/firestore";
-import { addDoc } from "firebase/firestore";
+import { addDoc, updateDoc, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase-config.js";
 
 const cookies = new Cookies();
@@ -39,18 +39,33 @@ export const Auth = (props) => {
         await updateProfile(result.user, { displayName: displayName });
       }
       cookies.set("auth-token", result.user.refreshToken);
-      await addDoc(onlineUsers, {
-        displayName: result.user.displayName,
-        photoURL: result.user.photoURL,
-        uid : result.user.uid,
-        room: ""
-      });
-      
+  
+      const q = query(onlineUsers, where("uid", "==", result.user.uid));
+      const querySnapshot = await getDocs(q);
+      const userExists = !querySnapshot.empty;
+  
+      if (userExists) {
+        await updateDoc(querySnapshot.docs[0].ref, {
+          status: "active",
+        });
+      } else {
+        await addDoc(onlineUsers, {
+          displayName: result.user.displayName,
+          photoURL: result.user.photoURL,
+          uid: result.user.uid,
+          room: "",
+          status: "active",
+        });
+      }
+  
       setIsAuth(true);
     } catch (error) {
       console.log(error);
     }
   };
+     
+      
+      
 
   return (
     <div className="auth">
