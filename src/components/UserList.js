@@ -42,7 +42,7 @@ export const UserList = () => {
     };
   
     // Check for inactive users every 5 minutes
-    const intervalId = setInterval(checkInactiveUsers, 10 * 1000);
+    const intervalId = setInterval(checkInactiveUsers, 1000);
   
     return () => {
       clearInterval(intervalId);

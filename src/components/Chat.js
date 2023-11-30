@@ -35,7 +35,7 @@ import {
 const onlineUsers = collection(db, "onlineUsers");
 
 export const Chat = (props) => {
-  const { room, setRoom, signOutFunction } = props;
+  const { room, setRoom, signOutFunction, isSigningOut } = props;
   const [roomSet, setRoomSet] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [combinedItems, setCombinedItems] = useState([]);
@@ -47,6 +47,7 @@ export const Chat = (props) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [lastReadTime, setLastReadTime] = useState(0);
   const [replyToId, setReplyToId] = useState(null);
+
 
 
   useEffect(() => {
@@ -127,18 +128,21 @@ export const Chat = (props) => {
         });
       }
     };
-    const handleClick = async () => {
-      const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
-      const querySnapshot = await getDocs(q);
-      const documentSnapshot = querySnapshot.docs[0];
-      const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-  
-      await updateDoc(onlineUserDoc, {
-        status: "active",
-        lastActiveAt: new Date(),
-      });
+    const handleClick = async (event) => {
+      if(event.target.id === "signOutButton") return;
+      if (auth.currentUser) {
+        const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
+        const querySnapshot = await getDocs(q);
+        const documentSnapshot = querySnapshot.docs[0];
+        const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
+    
+        await updateDoc(onlineUserDoc, {
+          status: "active",
+          lastActiveAt: new Date(),
+        });
+      }
     };
-  
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('click', handleClick);
 
@@ -353,7 +357,7 @@ const submitReply = async () => {
             <div className="col-1 roomTab otherTab" onClick={showHideUsers}>
               <FontAwesomeIcon icon={faUsers} />
             </div>
-            <div className="col-1 roomTab otherTab" onClick={signOutFunction}>
+            <div id="signOutButton" className="col-1 roomTab otherTab" onClick={signOutFunction}>
               <FontAwesomeIcon icon={faRightFromBracket} />
             </div>
           </div>

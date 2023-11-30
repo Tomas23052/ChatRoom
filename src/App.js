@@ -14,11 +14,15 @@ const cookies = new Cookies();
 const onlineUsers = collection(db, "onlineUsers");
 
 
+
+
 function App() {
   const [isAuth, setIsAuth] = useState(cookies.get("auth-token"));
   const [currentRoom, setCurrentRoom] = useState("SLANDER"); // Initialize with a default room value
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setColor] = useState("");
+
+
 
   useEffect(() => {
     document.title = "CHATROOM SALAS FIXES";
@@ -44,22 +48,27 @@ function App() {
     setCurrentRoom(newRoom);
   };
 
-  const signUserOut = async () => {
+  const signUserOut = async (event) => {
+    event.stopPropagation();
+
     try {
+      
       const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
   
       if (!querySnapshot.empty) {
         const documentSnapshot = querySnapshot.docs[0];
         const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-        console.log(onlineUserDoc);
         await updateDoc(onlineUserDoc, {
           status: "logged out",
         });
+
         await signOut(auth);
         cookies.remove("auth-token");
         setIsAuth(false);
+        
       }
+     
     } catch (error) {
       console.error('Error occurred during sign-out:', error);
     }
@@ -79,7 +88,7 @@ function App() {
 
   return (
     <>
-        <Chat room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut} />
+        <Chat  room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut} />
     </>
   );
 }
