@@ -29,7 +29,7 @@ export const UserList = () => {
   useEffect(() => {
     const checkInactiveUsers = async () => {
       const oneSecondAgo = new Date();
-      oneSecondAgo.setSeconds(oneSecondAgo.getSeconds() - 2);
+      oneSecondAgo.setSeconds(oneSecondAgo.getSeconds() - 30);
   
       const q = query(collection(db, "onlineUsers"), where("lastActiveAt", "<", oneSecondAgo));
   
