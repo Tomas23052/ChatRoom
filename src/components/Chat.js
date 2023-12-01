@@ -117,29 +117,41 @@ export const Chat = (props) => {
 
   useEffect(() => {
     const handleVisibilityChange = async () => {
+    
+      if (!auth.currentUser) return;
+    
       const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
       const documentSnapshot = querySnapshot.docs[0];
       const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
-  
+    
       if (document.visibilityState === 'hidden') {
         await updateDoc(onlineUserDoc, {
+          status: "inactive", // Set the user's status to "inactive"
           lastActiveAt: new Date(),
         });
       }
     };
+    
     const handleClick = async (event) => {
-      if(event.target.id === "signOutButton") return;
+     
       if (auth.currentUser) {
         const q = query(onlineUsers, where("uid", "==", auth.currentUser.uid));
         const querySnapshot = await getDocs(q);
         const documentSnapshot = querySnapshot.docs[0];
         const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
     
-        await updateDoc(onlineUserDoc, {
-          status: "active",
-          lastActiveAt: new Date(),
-        });
+        if (event.target.id === "signOutButton") {
+          await updateDoc(onlineUserDoc, {
+            status: "logged out", // Set the user's status to "inactive"
+            lastActiveAt: new Date(),
+          });
+        } else {
+          await updateDoc(onlineUserDoc, {
+            status: "active",
+            lastActiveAt: new Date(),
+          });
+        }
       }
     };
 
@@ -365,91 +377,90 @@ const submitReply = async () => {
       </div>
 
       <div id="messages-container" className="row messages">
-        {Object.keys(dates).map((date) => (
-          <div key={date}>
-            <div className="date">{date}</div>
+  {Object.keys(dates).map((date) => (
+    <div key={date}>
+      <div className="date">{date}</div>
 
-            {dates[date].map((item) => (
-              <div className="message" key={item.id}>
-                <span className="user" style={{ color: item.photoURL }}>
-                  {item.user}
-                </span>
-                <span className="date">
-                  {item.createdAt
-                    ? item.createdAt.toDate().toLocaleTimeString("pt-PT", {
-                        hour: "numeric",
-                        minute: "numeric",
-                      })
-                    : item.createdAt}
-                </span>
+      {dates[date].map((item) => (
+        <div className="message" key={item.id}>
+          <span className="user" style={{ color: item.photoURL }}>
+            {item.user}
+          </span>
+          <span className="date">
+            {item.createdAt
+              ? item.createdAt.toDate().toLocaleTimeString("pt-PT", {
+                  hour: "numeric",
+                  minute: "numeric",
+                })
+              : item.createdAt}
+          </span>
 
-                {item.text && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span>{item.text}</span>
-                    {item.user === auth.currentUser.displayName && (
-                      <div>
-                        <button
-                          style={{ background: "none", border: "none" }}
-                          onClick={() => editMessage(item)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faEdit}
-                            size="sm"
-                          ></FontAwesomeIcon>
-                        </button>
-                        <button
-                          style={{ background: "none", border: "none" }}
-                          onClick={() => removeMessage(item)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrash}
-                            size="sm"
-                          ></FontAwesomeIcon>
-                        </button>
-                       <button
-                          style={{ background: "none", border: "none" }}
-                          onClick={() => startReply(item.id)}
-                        >
-                          <FontAwesomeIcon
-                            icon={faReply}
-                            size="sm"
-                          ></FontAwesomeIcon>
-                        </button>
-                      </div>
-                    )}
-                     
-                  </div>
-                )}
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={`Uploaded by ${item.user}`}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: "300px",
-                      marginTop: "10px",
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-
+          {item.text && (
             <div
-              ref={(el) => {
-                if (el) {
-                  el.scrollIntoView({ behavior: "instant" });
-                }
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
-            ></div>
-          </div>
-        ))}
-      </div>
+            >
+              <span>{item.text}</span>
+              {auth.currentUser && item.user === auth.currentUser.displayName && (
+                <div>
+                  <button
+                    style={{ background: "none", border: "none" }}
+                    onClick={() => editMessage(item)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faEdit}
+                      size="sm"
+                    ></FontAwesomeIcon>
+                  </button>
+                  <button
+                    style={{ background: "none", border: "none" }}
+                    onClick={() => removeMessage(item)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faTrash}
+                      size="sm"
+                    ></FontAwesomeIcon>
+                  </button>
+                 <button
+                    style={{ background: "none", border: "none" }}
+                    onClick={() => startReply(item.id)}
+                  >
+                    <FontAwesomeIcon
+                      icon={faReply}
+                      size="sm"
+                    ></FontAwesomeIcon>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {item.imageUrl && (
+            <img
+              src={item.imageUrl}
+              alt={`Uploaded by ${item.user}`}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "300px",
+                marginTop: "10px",
+              }}
+            />
+          )}
+        </div>
+      ))}
+
+      <div
+        ref={(el) => {
+          if (el) {
+            el.scrollIntoView({ behavior: "instant" });
+          }
+        }}
+      ></div>
+    </div>
+  ))}
+</div>
 
       <form onSubmit={handleSubmit} className="new-message-form">
         <input

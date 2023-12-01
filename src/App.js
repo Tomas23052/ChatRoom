@@ -24,6 +24,7 @@ function App() {
 
 
 
+
   useEffect(() => {
     document.title = "CHATROOM SALAS FIXES";
     // Listen for changes in the authentication state
@@ -88,7 +89,7 @@ function App() {
 
   return (
     <>
-        <Chat  room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut} />
+        <Chat room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut}/>
     </>
   );
 }

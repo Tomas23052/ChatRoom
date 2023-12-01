@@ -30,14 +30,19 @@ export const UserList = () => {
     const checkInactiveUsers = async () => {
       const oneSecondAgo = new Date();
       oneSecondAgo.setSeconds(oneSecondAgo.getSeconds() - 30);
-  
-      const q = query(collection(db, "onlineUsers"), where("lastActiveAt", "<", oneSecondAgo));
-  
+    
+      const q = query(
+        collection(db, "onlineUsers"), 
+        where("lastActiveAt", "<", oneSecondAgo)
+      );
+    
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
-        updateDoc(doc.ref, {
-          status: "inactive",
-        }, { merge: true });
+        if (doc.data().status !== "logged out") { // Exclude users whose status is "logged out"
+          updateDoc(doc.ref, {
+            status: "inactive",
+          }, { merge: true });
+        }
       });
     };
   
