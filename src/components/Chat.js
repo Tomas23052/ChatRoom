@@ -292,6 +292,25 @@ export const Chat = (props) => {
     }
   };
 
+  const editLatestMessage = async (item) => {
+    const newText = prompt("Edit your message:", item.text);
+    if (newText) {
+      const docRef = doc(db, "messages", item.id);
+      await updateDoc(docRef, {
+        text: newText,
+      });
+    }
+  }
+
+  const handleKeyDown = (e) => {
+    if(e.key === 'ArrowUp') {
+      const latestMessage = combinedItems[combinedItems.length - 1];
+      if (latestMessage.user === auth.currentUser.displayName) {
+        editMessage(latestMessage);
+      }
+    }
+  };
+
   const removeMessage = async (item) => {
     if (window.confirm("Are you sure you want to delete this message?")) {
       const docRef = doc(db, "messages", item.id);
@@ -474,6 +493,8 @@ const submitReply = async () => {
           onChange={(e) => setNewMessage(e.target.value)}
           value={newMessage}
           placeholder="Type your message here..."
+          onKeyDown={handleKeyDown}
+
         />
         <button className="send-button" type="submit">
           <FontAwesomeIcon icon={faShare} />
