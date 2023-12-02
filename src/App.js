@@ -32,8 +32,10 @@ function App() {
       if (user) {
         // If the user is signed in, update the display name state
         setDisplayName(user.displayName);
-        document.getElementById("colorPicker").value = user.photoURL; 
-        console.log(user);
+        const colorPickerElement = document.getElementById("colorPicker");
+        if (colorPickerElement) {
+          colorPickerElement.value = user.photoURL;
+        }
       }
     });
 
@@ -43,7 +45,7 @@ function App() {
     };
   }, []);
 
-  
+
 
   const handleRoomChange = (newRoom) => {
     setCurrentRoom(newRoom);
@@ -53,10 +55,10 @@ function App() {
     event.stopPropagation();
 
     try {
-      
+
       const q = query(onlineUsers, where('uid', '==', auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
         const documentSnapshot = querySnapshot.docs[0];
         const onlineUserDoc = doc(onlineUsers, documentSnapshot.id);
@@ -67,9 +69,9 @@ function App() {
         await signOut(auth);
         cookies.remove("auth-token");
         setIsAuth(false);
-        
+
       }
-     
+
     } catch (error) {
       console.error('Error occurred during sign-out:', error);
     }
@@ -77,7 +79,7 @@ function App() {
 
 
 
-  
+
 
   if (!isAuth) {
     return (
@@ -89,7 +91,7 @@ function App() {
 
   return (
     <>
-        <Chat room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut}/>
+      <Chat room={currentRoom} setRoom={handleRoomChange} signOutFunction={signUserOut} />
     </>
   );
 }

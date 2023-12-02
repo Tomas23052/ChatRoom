@@ -32,6 +32,12 @@ export const Auth = (props) => {
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      validateAnswer();
+    }
+  }
+
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -80,6 +86,7 @@ export const Auth = (props) => {
             placeholder="Enter your response"
             value={questionAnswer}
             onChange={(e) => setQuestionAnswer(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
          
           <button style={{marginLeft: 10}} onClick={validateAnswer}>Proceed</button>
